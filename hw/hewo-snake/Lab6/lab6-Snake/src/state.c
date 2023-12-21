@@ -352,11 +352,35 @@ game_state_t* load_board(FILE* fp) {
 */
 static void find_head(game_state_t* state, unsigned int snum) {
   // TODO: Implement this function.
+  unsigned int cur_row = state->snakes[snum].tail_row;
+  unsigned int cur_col = state->snakes[snum].tail_col;
+  while(!is_head(state->board[cur_row][cur_col]))
+  {
+    cur_row = get_next_row(cur_row, state->board[cur_row][cur_col]);
+    cur_col = get_next_col(cur_col, state->board[cur_row][cur_col]);
+  }
+  state->snakes[snum].head_row = cur_row;
+  state->snakes[snum].head_col = cur_col;
   return;
 }
 
 /* Task 6.2 */
 game_state_t* initialize_snakes(game_state_t* state) {
   // TODO: Implement this function.
-  return NULL;
+  for(int i=0;i<state->num_rows;i++)
+  {
+    for(int j=0; j < strlen(state->board[i]); j++)
+    {
+      if(is_tail(state->board[i][j]))
+      {
+        state->num_snakes++;
+        state->snakes = realloc(state->snakes, sizeof(snake_t) * state->num_snakes);
+        state->snakes[state->num_snakes - 1].tail_row = i;
+        state->snakes[state->num_snakes - 1].tail_col = j;
+        find_head(state, state->num_snakes - 1);
+        state->snakes[state->num_snakes - 1].live = true;
+      }
+    }
+  }
+  return state;
 }
