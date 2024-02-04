@@ -17,6 +17,18 @@ func FirstPass() {
 			i++
 		}
 	}
+	i = 16
+	for _, ins := range Parser.Instruction {
+		if ins.Type == 0 {
+			//A-instruction
+			if ins.Address == "" {
+				if _, ok := SymbolTable.SymbolTable[ins.Name]; !ok {
+					SymbolTable.SymbolTable[ins.Name] = i
+					i++
+				}
+			}
+		}
+	}
 }
 
 var Ans []string
