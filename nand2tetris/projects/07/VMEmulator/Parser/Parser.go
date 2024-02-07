@@ -27,13 +27,27 @@ func Parse(s string) {
 	words := strings.Split(s, " ")
 
 	var x Model
-	
+
 	if len(words) == 1 {
 		// Add or Sub
 		if words[0] == "add" {
 			x.InstructionType = 2
 		} else if words[0] == "sub" {
 			x.InstructionType = 3
+		} else if words[0] == "neg" {
+			x.InstructionType = 4
+		} else if words[0] == "eq" {
+			x.InstructionType = 5
+		} else if words[0] == "gt" {
+			x.InstructionType = 6
+		} else if words[0] == "lt" {
+			x.InstructionType = 7
+		} else if words[0] == "and" {
+			x.InstructionType = 8
+		} else if words[0] == "or" {
+			x.InstructionType = 9
+		} else if words[0] == "not" {
+			x.InstructionType = 10
 		}
 	} else {
 		if words[0] == "push" {
