@@ -91,9 +91,8 @@ func ReadFile() {
 				DealFile(fullPath)
 			}
 		}
-
+		Splice(path)
 	} else {
 		DealFile(path)
 	}
-
 }

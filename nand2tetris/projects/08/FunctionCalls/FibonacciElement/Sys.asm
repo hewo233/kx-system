@@ -1,12 +1,12 @@
-(Sys.Sys.init)
+(Sys.init)
 @0
 D=A
 @R13
 M=D
-(Sys.INIT_LOCAL_LOOP_START)
+(Sys_Sys.init.INIT_LOCAL_LOOP_START)
 @R13
 D=M
-@Sys.INIT_LOCAL_LOOP_END
+@Sys_Sys.init.INIT_LOCAL_LOOP_END
 D;JEQ
 @SP
 A=M
@@ -15,9 +15,9 @@ M=0
 M=M+1
 @R13
 MD=M-1
-@Sys.INIT_LOCAL_LOOP_START
+@Sys_Sys.init.INIT_LOCAL_LOOP_START
 0;JMP
-(Sys.INIT_LOCAL_LOOP_END)
+(Sys_Sys.init.INIT_LOCAL_LOOP_END)
 @4
 D=A
 @SP
@@ -72,7 +72,7 @@ M=D
 D=M
 @LCL
 M=D
-@Sys.Main.fibonacci
+@Main.fibonacci
 0;JMP
 (Sys_RETURN_LABEL_0)
 (END)

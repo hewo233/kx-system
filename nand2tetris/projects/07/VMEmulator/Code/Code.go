@@ -76,7 +76,7 @@ func PushAll(ins Parser.Model, FileName string) {
 		Ans = append(Ans, "D=M-D")
 	} else if ins.AddressType == 6 {
 		//Static
-		NumString := "@" + FileName + "." + strconv.Itoa(ins.Num)
+		NumString := "@" + FileName + ".Static" + strconv.Itoa(ins.Num)
 		Ans = append(Ans, NumString)
 		Ans = append(Ans, "D=M")
 		Push()
@@ -125,7 +125,7 @@ func PopAll(ins Parser.Model, FileName string) {
 
 	} else if ins.AddressType == 6 {
 		// Static
-		NumString := "@" + FileName + "." + strconv.Itoa(ins.Num)
+		NumString := "@" + FileName + ".Static" + strconv.Itoa(ins.Num)
 		Ans = append(Ans, NumString)
 		Ans = append(Ans, "D=A")
 		Pop()
@@ -230,17 +230,17 @@ func Deal(ins Parser.Model, FileName string, eqCount, gtCount, ltCount *int) {
 		Ans = append(Ans, "D;JNE")
 	} else if ins.InstructionType == 14 {
 		// Function
-		Ans = append(Ans, "("+FileName+"."+ins.Label+")")
+		Ans = append(Ans, "("+ins.Label+")")
 
 		numLocal := strconv.Itoa(ins.Num)
 		Ans = append(Ans, "@"+numLocal)
 		Ans = append(Ans, "D=A")
 		Ans = append(Ans, "@R13")
 		Ans = append(Ans, "M=D")
-		Ans = append(Ans, "("+FileName+".INIT_LOCAL_LOOP_START)")
+		Ans = append(Ans, "("+FileName+"_"+ins.Label+".INIT_LOCAL_LOOP_START)")
 		Ans = append(Ans, "@R13")
 		Ans = append(Ans, "D=M")
-		Ans = append(Ans, "@"+FileName+".INIT_LOCAL_LOOP_END")
+		Ans = append(Ans, "@"+FileName+"_"+ins.Label+".INIT_LOCAL_LOOP_END")
 		Ans = append(Ans, "D;JEQ")
 		Ans = append(Ans, "@SP")
 		Ans = append(Ans, "A=M")
@@ -249,9 +249,9 @@ func Deal(ins Parser.Model, FileName string, eqCount, gtCount, ltCount *int) {
 		Ans = append(Ans, "M=M+1")
 		Ans = append(Ans, "@R13")
 		Ans = append(Ans, "MD=M-1")
-		Ans = append(Ans, "@"+FileName+".INIT_LOCAL_LOOP_START")
+		Ans = append(Ans, "@"+FileName+"_"+ins.Label+".INIT_LOCAL_LOOP_START")
 		Ans = append(Ans, "0;JMP")
-		Ans = append(Ans, "("+FileName+".INIT_LOCAL_LOOP_END)")
+		Ans = append(Ans, "("+FileName+"_"+ins.Label+".INIT_LOCAL_LOOP_END)")
 	} else if ins.InstructionType == 15 {
 		// Call
 
@@ -293,7 +293,7 @@ func Deal(ins Parser.Model, FileName string, eqCount, gtCount, ltCount *int) {
 		Ans = append(Ans, "M=D")
 
 		// Goto
-		Ans = append(Ans, "@"+FileName+"."+ins.Label)
+		Ans = append(Ans, "@"+ins.Label)
 		Ans = append(Ans, "0;JMP")
 
 		// Return Label
