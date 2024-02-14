@@ -6,6 +6,7 @@ import (
 )
 
 var Ans []string
+var CallCount = 0
 
 func Push() {
 	Ans = append(Ans, "@SP")
@@ -53,6 +54,7 @@ func PushAll(ins Parser.Model, FileName string) {
 	if ins.AddressType <= 4 {
 		// Local, Argument, This, That
 		SegType := SegMap[ins.AddressType]
+		//Ans = append(Ans, "The AddType is "+strconv.Itoa(ins.AddressType))
 		Ans = append(Ans, "@"+SegType)
 		Ans = append(Ans, "D=M")
 		NumString := "@" + strconv.Itoa(ins.Num)
@@ -212,6 +214,160 @@ func Deal(ins Parser.Model, FileName string, eqCount, gtCount, ltCount *int) {
 		Ans = append(Ans, "@SP")
 		Ans = append(Ans, "A=M-1")
 		Ans = append(Ans, "M=!M")
+	} else if ins.InstructionType == 11 {
+		// Label
+		Ans = append(Ans, "("+ins.Label+")")
+	} else if ins.InstructionType == 12 {
+		// Goto
+		Ans = append(Ans, "@"+ins.JumpTo)
+		Ans = append(Ans, "0;JMP")
+	} else if ins.InstructionType == 13 {
+		// If-Goto
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "AM=M-1")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@"+ins.JumpTo)
+		Ans = append(Ans, "D;JNE")
+	} else if ins.InstructionType == 14 {
+		// Function
+		Ans = append(Ans, "("+FileName+"."+ins.Label+")")
+
+		numLocal := strconv.Itoa(ins.Num)
+		Ans = append(Ans, "@"+numLocal)
+		Ans = append(Ans, "D=A")
+		Ans = append(Ans, "@R13")
+		Ans = append(Ans, "M=D")
+		Ans = append(Ans, "("+FileName+".INIT_LOCAL_LOOP_START)")
+		Ans = append(Ans, "@R13")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@"+FileName+".INIT_LOCAL_LOOP_END")
+		Ans = append(Ans, "D;JEQ")
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "A=M")
+		Ans = append(Ans, "M=0")
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "M=M+1")
+		Ans = append(Ans, "@R13")
+		Ans = append(Ans, "MD=M-1")
+		Ans = append(Ans, "@"+FileName+".INIT_LOCAL_LOOP_START")
+		Ans = append(Ans, "0;JMP")
+		Ans = append(Ans, "("+FileName+".INIT_LOCAL_LOOP_END)")
+	} else if ins.InstructionType == 15 {
+		// Call
+
+		// Save
+		Ans = append(Ans, "@"+FileName+"_RETURN_LABEL_"+strconv.Itoa(CallCount))
+		Ans = append(Ans, "D=A")
+		Push()
+
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Push()
+
+		Ans = append(Ans, "@ARG")
+		Ans = append(Ans, "D=M")
+		Push()
+
+		Ans = append(Ans, "@THIS")
+		Ans = append(Ans, "D=M")
+		Push()
+
+		Ans = append(Ans, "@THAT")
+		Ans = append(Ans, "D=M")
+		Push()
+
+		// Reset ARG
+		Ans = append(Ans, "@5")
+		Ans = append(Ans, "D=A")
+		Ans = append(Ans, "@"+strconv.Itoa(ins.Num))
+		Ans = append(Ans, "D=D+A")
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "D=M-D")
+		Ans = append(Ans, "@ARG")
+		Ans = append(Ans, "M=D")
+
+		// Reset LCL
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "M=D")
+
+		// Goto
+		Ans = append(Ans, "@"+FileName+"."+ins.Label)
+		Ans = append(Ans, "0;JMP")
+
+		// Return Label
+		Ans = append(Ans, "("+FileName+"_RETURN_LABEL_"+strconv.Itoa(CallCount)+")")
+		CallCount++
+
+	} else if ins.InstructionType == 16 {
+		// Return
+
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "A=M-1")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@R13")
+		Ans = append(Ans, "M=D")
+
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@5")
+		Ans = append(Ans, "A=D-A")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@R14")
+		Ans = append(Ans, "M=D")
+
+		//先改栈顶 QAQ
+		Ans = append(Ans, "@ARG")
+		Ans = append(Ans, "D=M+1")
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "M=D")
+
+		//THAT
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@1")
+		Ans = append(Ans, "A=D-A")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@THAT")
+		Ans = append(Ans, "M=D")
+
+		//THIS
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@2")
+		Ans = append(Ans, "A=D-A")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@THIS")
+		Ans = append(Ans, "M=D")
+
+		//ARG
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@3")
+		Ans = append(Ans, "A=D-A")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@ARG")
+		Ans = append(Ans, "M=D")
+
+		//LCL
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@4")
+		Ans = append(Ans, "A=D-A")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@LCL")
+		Ans = append(Ans, "M=D")
+
+		Ans = append(Ans, "@R13")
+		Ans = append(Ans, "D=M")
+		Ans = append(Ans, "@SP")
+		Ans = append(Ans, "A=M-1")
+		Ans = append(Ans, "M=D")
+
+		Ans = append(Ans, "@R14")
+		Ans = append(Ans, "A=M")
+		Ans = append(Ans, "0;JMP")
 	}
 }
 
@@ -220,6 +376,8 @@ func Pass(FileName string) {
 	var eqCount, gtCount, ltCount = 0, 0, 0
 
 	for _, ins := range Parser.Instruction {
+		//fmt.Println(ins)
+		//Ans = append(Ans, strconv.Itoa(ins.InstructionType))
 		Deal(ins, FileName, &eqCount, &gtCount, &ltCount)
 	}
 }

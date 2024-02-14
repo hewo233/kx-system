@@ -10,10 +10,13 @@ var Instruction []Model
 
 func Remove(s string) string {
 	// remove space and //
+	s = strings.TrimSpace(s)
 	index := strings.Index(s, "//")
 	if index != -1 {
 		s = s[:index]
 	}
+	s = strings.TrimSpace(s)
+
 	return s
 }
 
@@ -77,13 +80,41 @@ func Parse(s string) {
 
 	var x Model
 
-	if len(words) == 1 {
+	if len(words) == 1 && words[0] != "return" {
 		Single(words, &x)
 	} else {
 		if words[0] == "push" || words[0] == "pop" {
 			PushOrPop(words, &x)
+
 		} else if words[0] == "label" || words[0] == "goto" || words[0] == "if-goto" {
 			GotoS(words, &x)
+
+		} else {
+			if words[0] == "function" {
+				x.InstructionType = 14
+				x.Label = words[1]
+
+				newNum, err := strconv.Atoi(words[2])
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				x.Num = newNum
+
+			} else if words[0] == "call" {
+				x.InstructionType = 15
+				x.Label = words[1]
+
+				newNum, err := strconv.Atoi(words[2])
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				x.Num = newNum
+
+			} else if words[0] == "return" {
+				x.InstructionType = 16
+			}
 		}
 	}
 	Instruction = append(Instruction, x)

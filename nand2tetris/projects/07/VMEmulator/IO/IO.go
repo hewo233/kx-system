@@ -9,18 +9,24 @@ import (
 	"path/filepath"
 )
 
-var path string
+func Init() {
+	Parser.Init()
+	Code.Init()
+}
 
-func ReadFile() string {
-	fmt.Print("Please enter the file path: ")
-	fmt.Scanf("%s", &path)
-
+func DealFile(path string) {
+	Init()
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Println(err)
-		return "None"
+
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(file)
 
 	scanner := bufio.NewScanner(file)
 
@@ -35,17 +41,25 @@ func ReadFile() string {
 	//fmt.Println("READ OVER")
 
 	fileName := filepath.Base(path)
-	return fileName[:len(fileName)-3]
+	useName := fileName[:len(fileName)-3]
+
+	Code.Pass(useName)
+	WriteFile(path)
 }
 
-func WriteFile() {
+func WriteFile(path string) {
 	path = path[:len(path)-3] + ".asm"
 	file, err := os.Create(path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(file)
 
 	for _, ins := range Code.Ans {
 		_, err := file.WriteString(ins + "\n")
@@ -54,4 +68,32 @@ func WriteFile() {
 			return
 		}
 	}
+}
+
+func ReadFile() {
+	var path string
+	fmt.Print("Please enter the file path: ")
+	fmt.Scanf("%s", &path)
+
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if fileInfo.IsDir() {
+		files, err := os.ReadDir(path)
+		if err != nil {
+			fmt.Println(err)
+		}
+		for _, file := range files {
+			if filepath.Ext(file.Name()) == ".vm" {
+				fullPath := filepath.Join(path, file.Name())
+				DealFile(fullPath)
+			}
+		}
+
+	} else {
+		DealFile(path)
+	}
+
 }
